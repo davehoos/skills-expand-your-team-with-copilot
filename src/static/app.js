@@ -1,4 +1,11 @@
 document.addEventListener("DOMContentLoaded", () => {
+  // Helper function to escape HTML and prevent XSS
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
   // DOM elements
   const activitiesList = document.getElementById("activities-list");
   const messageDiv = document.getElementById("message");
@@ -553,7 +560,7 @@ document.addEventListener("DOMContentLoaded", () => {
         </ul>
       </div>
       <div class="share-buttons">
-        <button class="share-button" data-activity="${name}" data-description="${details.description.replace(/"/g, '&quot;')}" data-schedule="${formattedSchedule.replace(/"/g, '&quot;')}" title="Share this activity">
+        <button class="share-button" data-activity="${escapeHtml(name)}" data-description="${escapeHtml(details.description)}" data-schedule="${escapeHtml(formattedSchedule)}" title="Share this activity">
           📤 Share
         </button>
       </div>
@@ -1037,8 +1044,10 @@ document.addEventListener("DOMContentLoaded", () => {
   function fallbackCopyToClipboard(text) {
     const textArea = document.createElement("textarea");
     textArea.value = text;
-    textArea.style.position = "fixed";
-    textArea.style.left = "-999999px";
+    textArea.style.position = "absolute";
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.opacity = "0";
     document.body.appendChild(textArea);
     textArea.select();
     try {
