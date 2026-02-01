@@ -489,8 +489,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Helper function to validate and normalize difficulty
-  function isValidDifficulty(difficulty) {
-    if (!difficulty) return false;
+  function validateAndNormalizeDifficulty(difficulty) {
+    if (!difficulty) return null;
     const normalized = difficulty.toLowerCase();
     return validDifficulties.includes(normalized) ? normalized : null;
   }
@@ -531,7 +531,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Create difficulty badge if difficulty is specified and valid
     let difficultyBadgeHtml = '';
-    let validatedDifficulty = isValidDifficulty(details.difficulty);
+    let validatedDifficulty = validateAndNormalizeDifficulty(details.difficulty);
     if (validatedDifficulty) {
       difficultyBadgeHtml = `<div class="difficulty-badge ${validatedDifficulty}"></div>`;
     }
