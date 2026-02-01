@@ -35,6 +35,9 @@ document.addEventListener("DOMContentLoaded", () => {
     technology: { label: "Technology", color: "#e8eaf6", textColor: "#3949ab" },
   };
 
+  // Valid difficulty levels
+  const validDifficulties = ['beginner', 'intermediate', 'advanced'];
+
   // State for activities and filters
   let allActivities = {};
   let currentFilter = "all";
@@ -522,10 +525,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // Create difficulty badge if difficulty is specified
     let difficultyBadgeHtml = '';
     if (details.difficulty) {
-      // Validate difficulty is one of the expected values
-      const validDifficulties = ['Beginner', 'Intermediate', 'Advanced'];
-      if (validDifficulties.includes(details.difficulty)) {
-        difficultyBadgeHtml = `<div class="difficulty-badge ${details.difficulty.toLowerCase()}"></div>`;
+      // Normalize and validate difficulty value
+      const normalizedDifficulty = details.difficulty.toLowerCase();
+      if (validDifficulties.includes(normalizedDifficulty)) {
+        difficultyBadgeHtml = `<div class="difficulty-badge ${normalizedDifficulty}"></div>`;
       }
     }
 
@@ -597,8 +600,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Safely set difficulty badge text content to prevent XSS
     if (details.difficulty) {
-      const validDifficulties = ['Beginner', 'Intermediate', 'Advanced'];
-      if (validDifficulties.includes(details.difficulty)) {
+      const normalizedDifficulty = details.difficulty.toLowerCase();
+      if (validDifficulties.includes(normalizedDifficulty)) {
         const difficultyBadge = activityCard.querySelector('.difficulty-badge');
         if (difficultyBadge) {
           difficultyBadge.textContent = details.difficulty;
