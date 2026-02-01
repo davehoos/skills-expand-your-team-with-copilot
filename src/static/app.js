@@ -27,8 +27,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Theme toggle elements
   const themeToggle = document.getElementById("theme-toggle");
-  const themeIcon = themeToggle.querySelector(".theme-icon");
-  const themeLabel = themeToggle.querySelector(".theme-label");
+  const themeIcon = themeToggle ? themeToggle.querySelector(".theme-icon") : null;
+  const themeLabel = themeToggle ? themeToggle.querySelector(".theme-label") : null;
 
   // Activity categories with corresponding colors
   const activityTypes = {
@@ -58,6 +58,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Theme management
   function initializeTheme() {
+    if (!themeToggle) return; // Exit if theme toggle doesn't exist
+    
     // Check localStorage for saved theme preference
     const savedTheme = localStorage.getItem("theme");
     if (savedTheme === "dark") {
@@ -75,6 +77,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function updateThemeToggle(isDarkMode) {
+    if (!themeIcon || !themeLabel) return; // Exit if elements don't exist
+    
     if (isDarkMode) {
       themeIcon.textContent = "☀️";
       themeLabel.textContent = "Light";
@@ -85,7 +89,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Event listener for theme toggle
-  themeToggle.addEventListener("click", toggleTheme);
+  if (themeToggle) {
+    themeToggle.addEventListener("click", toggleTheme);
+  }
 
   // Initialize filters from active elements
   function initializeFilters() {
