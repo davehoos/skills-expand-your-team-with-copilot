@@ -49,6 +49,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Authentication state
   let currentUser = null;
 
+  // Authentication state
+  let currentUser = null;
+
   // Time range mappings for the dropdown
   const timeRanges = {
     morning: { start: "06:00", end: "08:00" }, // Before school hours
@@ -488,6 +491,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Helper function to validate and normalize difficulty
+  function isValidDifficulty(difficulty) {
+    if (!difficulty) return false;
+    const normalized = difficulty.toLowerCase();
+    return validDifficulties.includes(normalized) ? normalized : null;
+  }
+
   // Function to render a single activity card
   function renderActivityCard(name, details) {
     const activityCard = document.createElement("div");
@@ -524,12 +534,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Create difficulty badge if difficulty is specified
     let difficultyBadgeHtml = '';
-    if (details.difficulty) {
-      // Normalize and validate difficulty value
-      const normalizedDifficulty = details.difficulty.toLowerCase();
-      if (validDifficulties.includes(normalizedDifficulty)) {
-        difficultyBadgeHtml = `<div class="difficulty-badge ${normalizedDifficulty}"></div>`;
-      }
+    const normalizedDifficulty = isValidDifficulty(details.difficulty);
+    if (normalizedDifficulty) {
+      difficultyBadgeHtml = `<div class="difficulty-badge ${normalizedDifficulty}" aria-label="Difficulty: ${details.difficulty}"></div>`;
     }
 
     // Create capacity indicator
@@ -599,13 +606,11 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
 
     // Safely set difficulty badge text content to prevent XSS
-    if (details.difficulty) {
-      const normalizedDifficulty = details.difficulty.toLowerCase();
-      if (validDifficulties.includes(normalizedDifficulty)) {
-        const difficultyBadge = activityCard.querySelector('.difficulty-badge');
-        if (difficultyBadge) {
-          difficultyBadge.textContent = details.difficulty;
-        }
+    const normalizedDifficultyForText = isValidDifficulty(details.difficulty);
+    if (normalizedDifficultyForText) {
+      const difficultyBadge = activityCard.querySelector('.difficulty-badge');
+      if (difficultyBadge) {
+        difficultyBadge.textContent = details.difficulty;
       }
     }
 
