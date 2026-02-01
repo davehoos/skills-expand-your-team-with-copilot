@@ -529,11 +529,11 @@ document.addEventListener("DOMContentLoaded", () => {
       </span>
     `;
 
-    // Create difficulty badge if difficulty is specified
+    // Create difficulty badge if difficulty is specified and valid
     let difficultyBadgeHtml = '';
-    const normalizedDifficulty = isValidDifficulty(details.difficulty);
-    if (normalizedDifficulty) {
-      difficultyBadgeHtml = `<div class="difficulty-badge ${normalizedDifficulty}"></div>`;
+    let validatedDifficulty = isValidDifficulty(details.difficulty);
+    if (validatedDifficulty) {
+      difficultyBadgeHtml = `<div class="difficulty-badge ${validatedDifficulty}"></div>`;
     }
 
     // Create capacity indicator
@@ -603,8 +603,7 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
 
     // Safely set difficulty badge text content and aria-label to prevent XSS
-    const normalizedDifficultyForText = isValidDifficulty(details.difficulty);
-    if (normalizedDifficultyForText) {
+    if (validatedDifficulty) {
       const difficultyBadge = activityCard.querySelector('.difficulty-badge');
       if (difficultyBadge) {
         difficultyBadge.textContent = details.difficulty;
