@@ -521,7 +521,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Create difficulty badge if difficulty is specified
     const difficultyBadgeHtml = details.difficulty
-      ? `<div class="difficulty-badge ${details.difficulty.toLowerCase()}">${details.difficulty}</div>`
+      ? `<div class="difficulty-badge ${details.difficulty.toLowerCase()}"></div>`
       : '';
 
     // Create capacity indicator
@@ -589,6 +589,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       </div>
     `;
+
+    // Safely set difficulty badge text content to prevent XSS
+    if (details.difficulty) {
+      const difficultyBadge = activityCard.querySelector('.difficulty-badge');
+      if (difficultyBadge) {
+        difficultyBadge.textContent = details.difficulty;
+      }
+    }
 
     // Add click handlers for delete buttons
     const deleteButtons = activityCard.querySelectorAll(".delete-participant");
