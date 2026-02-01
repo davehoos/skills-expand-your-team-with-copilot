@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const categoryFilters = document.querySelectorAll(".category-filter");
   const dayFilters = document.querySelectorAll(".day-filter");
   const timeFilters = document.querySelectorAll(".time-filter");
+  const difficultyFilters = document.querySelectorAll(".difficulty-filter");
 
   // Authentication elements
   const loginButton = document.getElementById("login-button");
@@ -39,12 +40,16 @@ document.addEventListener("DOMContentLoaded", () => {
     technology: { label: "Technology", color: "#e8eaf6", textColor: "#3949ab" },
   };
 
+  // Valid difficulty levels
+  const validDifficulties = ['beginner', 'intermediate', 'advanced'];
+
   // State for activities and filters
   let allActivities = {};
   let currentFilter = "all";
   let searchQuery = "";
   let currentDay = "";
   let currentTimeRange = "";
+  let currentDifficulty = "";
 
   // Authentication state
   let currentUser = null;
@@ -105,6 +110,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const activeTimeFilter = document.querySelector(".time-filter.active");
     if (activeTimeFilter) {
       currentTimeRange = activeTimeFilter.dataset.time;
+    }
+
+    // Initialize difficulty filter
+    const activeDifficultyFilter = document.querySelector(".difficulty-filter.active");
+    if (activeDifficultyFilter) {
+      currentDifficulty = activeDifficultyFilter.dataset.difficulty;
     }
   }
 
@@ -434,6 +445,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
+      // Handle difficulty filter
+      if (currentDifficulty) {
+        queryParams.push(`difficulty=${encodeURIComponent(currentDifficulty)}`);
+      }
+
       const queryString =
         queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
       const response = await fetch(`/activities${queryString}`);
@@ -514,6 +530,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Helper function to validate and normalize difficulty
+  function validateAndNormalizeDifficulty(difficulty) {
+    if (!difficulty) return null;
+    const normalized = difficulty.toLowerCase();
+    return validDifficulties.includes(normalized) ? normalized : null;
+  }
+
   // Function to render a single activity card
   function renderActivityCard(name, details) {
     const activityCard = document.createElement("div");
@@ -548,6 +571,13 @@ document.addEventListener("DOMContentLoaded", () => {
       </span>
     `;
 
+    // Create difficulty badge if difficulty is specified and valid
+    let difficultyBadgeHtml = '';
+    let validatedDifficulty = validateAndNormalizeDifficulty(details.difficulty);
+    if (validatedDifficulty) {
+      difficultyBadgeHtml = `<div class="difficulty-badge ${validatedDifficulty}"></div>`;
+    }
+
     // Create capacity indicator
     const capacityIndicator = `
       <div class="capacity-container ${capacityStatusClass}">
@@ -564,6 +594,7 @@ document.addEventListener("DOMContentLoaded", () => {
     activityCard.innerHTML = `
       ${tagHtml}
       <h4>${name}</h4>
+      ${difficultyBadgeHtml}
       <p>${details.description}</p>
       <p class="tooltip">
         <strong>Schedule:</strong> ${formattedSchedule}
@@ -612,6 +643,15 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       </div>
     `;
+
+    // Safely set difficulty badge text content and aria-label to prevent XSS
+    if (validatedDifficulty) {
+      const difficultyBadge = activityCard.querySelector('.difficulty-badge');
+      if (difficultyBadge) {
+        difficultyBadge.textContent = details.difficulty;
+        difficultyBadge.setAttribute('aria-label', `Difficulty: ${details.difficulty}`);
+      }
+    }
 
     // Add click handlers for delete buttons
     const deleteButtons = activityCard.querySelectorAll(".delete-participant");
@@ -679,6 +719,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Update current time filter and fetch activities
       currentTimeRange = button.dataset.time;
+      fetchActivities();
+    });
+  });
+
+  // Add event listeners for difficulty filter buttons
+  difficultyFilters.forEach((button) => {
+    button.addEventListener("click", () => {
+      // Update active class
+      difficultyFilters.forEach((btn) => btn.classList.remove("active"));
+      button.classList.add("active");
+
+      // Update current difficulty filter and fetch activities
+      currentDifficulty = button.dataset.difficulty;
       fetchActivities();
     });
   });
