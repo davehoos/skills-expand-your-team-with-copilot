@@ -520,9 +520,14 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
 
     // Create difficulty badge if difficulty is specified
-    const difficultyBadgeHtml = details.difficulty
-      ? `<div class="difficulty-badge ${details.difficulty.toLowerCase()}"></div>`
-      : '';
+    let difficultyBadgeHtml = '';
+    if (details.difficulty) {
+      // Validate difficulty is one of the expected values
+      const validDifficulties = ['Beginner', 'Intermediate', 'Advanced'];
+      if (validDifficulties.includes(details.difficulty)) {
+        difficultyBadgeHtml = `<div class="difficulty-badge ${details.difficulty.toLowerCase()}"></div>`;
+      }
+    }
 
     // Create capacity indicator
     const capacityIndicator = `
@@ -592,9 +597,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Safely set difficulty badge text content to prevent XSS
     if (details.difficulty) {
-      const difficultyBadge = activityCard.querySelector('.difficulty-badge');
-      if (difficultyBadge) {
-        difficultyBadge.textContent = details.difficulty;
+      const validDifficulties = ['Beginner', 'Intermediate', 'Advanced'];
+      if (validDifficulties.includes(details.difficulty)) {
+        const difficultyBadge = activityCard.querySelector('.difficulty-badge');
+        if (difficultyBadge) {
+          difficultyBadge.textContent = details.difficulty;
+        }
       }
     }
 
