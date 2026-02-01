@@ -49,9 +49,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // Authentication state
   let currentUser = null;
 
-  // Authentication state
-  let currentUser = null;
-
   // Time range mappings for the dropdown
   const timeRanges = {
     morning: { start: "06:00", end: "08:00" }, // Before school hours
@@ -536,7 +533,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let difficultyBadgeHtml = '';
     const normalizedDifficulty = isValidDifficulty(details.difficulty);
     if (normalizedDifficulty) {
-      difficultyBadgeHtml = `<div class="difficulty-badge ${normalizedDifficulty}" aria-label="Difficulty: ${details.difficulty}"></div>`;
+      difficultyBadgeHtml = `<div class="difficulty-badge ${normalizedDifficulty}"></div>`;
     }
 
     // Create capacity indicator
@@ -605,12 +602,13 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
     `;
 
-    // Safely set difficulty badge text content to prevent XSS
+    // Safely set difficulty badge text content and aria-label to prevent XSS
     const normalizedDifficultyForText = isValidDifficulty(details.difficulty);
     if (normalizedDifficultyForText) {
       const difficultyBadge = activityCard.querySelector('.difficulty-badge');
       if (difficultyBadge) {
         difficultyBadge.textContent = details.difficulty;
+        difficultyBadge.setAttribute('aria-label', `Difficulty: ${details.difficulty}`);
       }
     }
 
