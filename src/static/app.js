@@ -1,4 +1,11 @@
 document.addEventListener("DOMContentLoaded", () => {
+  // Helper function to escape HTML and prevent XSS
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
   // DOM elements
   const activitiesList = document.getElementById("activities-list");
   const messageDiv = document.getElementById("message");
@@ -552,6 +559,11 @@ document.addEventListener("DOMContentLoaded", () => {
             .join("")}
         </ul>
       </div>
+      <div class="share-buttons">
+        <button class="share-button" data-activity="${escapeHtml(name)}" data-description="${escapeHtml(details.description)}" data-schedule="${escapeHtml(formattedSchedule)}" title="Share this activity">
+          📤 Share
+        </button>
+      </div>
       <div class="activity-card-actions">
         ${
           currentUser
@@ -586,6 +598,15 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
     }
+
+    // Add click handler for share button
+    const shareButton = activityCard.querySelector(".share-button");
+    shareButton.addEventListener("click", () => {
+      const activityName = shareButton.dataset.activity;
+      const description = shareButton.dataset.description;
+      const schedule = shareButton.dataset.schedule;
+      openShareModal(activityName, description, schedule);
+    });
 
     activitiesList.appendChild(activityCard);
   }
@@ -860,6 +881,197 @@ document.addEventListener("DOMContentLoaded", () => {
     setDayFilter,
     setTimeRangeFilter,
   };
+
+  // Share modal functions
+  function openShareModal(activityName, description, schedule) {
+    // Get or create share modal
+    let shareModal = document.getElementById("share-modal");
+    if (!shareModal) {
+      shareModal = document.createElement("div");
+      shareModal.id = "share-modal";
+      shareModal.className = "modal hidden";
+      shareModal.innerHTML = `
+        <div class="modal-content">
+          <span class="close-share-modal">&times;</span>
+          <h3>Share Activity</h3>
+          <p id="share-activity-name"></p>
+          <div class="share-options">
+            <button class="social-share-btn facebook" id="share-facebook">
+              <span class="share-icon">📘</span>
+              Facebook
+            </button>
+            <button class="social-share-btn twitter" id="share-twitter">
+              <span class="share-icon">🐦</span>
+              Twitter
+            </button>
+            <button class="social-share-btn email" id="share-email">
+              <span class="share-icon">📧</span>
+              Email
+            </button>
+            <button class="social-share-btn copy" id="share-copy">
+              <span class="share-icon">📋</span>
+              Copy Link
+            </button>
+          </div>
+          <div id="share-message" class="hidden share-message"></div>
+        </div>
+      `;
+      document.body.appendChild(shareModal);
+
+      // Add event listeners for share buttons
+      const closeShareModal = shareModal.querySelector(".close-share-modal");
+      closeShareModal.addEventListener("click", closeShareModalHandler);
+
+      shareModal.addEventListener("click", (event) => {
+        if (event.target === shareModal) {
+          closeShareModalHandler();
+        }
+      });
+    }
+
+    // Update modal content
+    const shareActivityName = document.getElementById("share-activity-name");
+    shareActivityName.textContent = activityName;
+
+    // Store data for sharing
+    shareModal.dataset.activityName = activityName;
+    shareModal.dataset.description = description;
+    shareModal.dataset.schedule = schedule;
+
+    // Set up share button handlers
+    const facebookBtn = document.getElementById("share-facebook");
+    const twitterBtn = document.getElementById("share-twitter");
+    const emailBtn = document.getElementById("share-email");
+    const copyBtn = document.getElementById("share-copy");
+
+    // Remove old event listeners by cloning
+    const newFacebookBtn = facebookBtn.cloneNode(true);
+    const newTwitterBtn = twitterBtn.cloneNode(true);
+    const newEmailBtn = emailBtn.cloneNode(true);
+    const newCopyBtn = copyBtn.cloneNode(true);
+
+    facebookBtn.parentNode.replaceChild(newFacebookBtn, facebookBtn);
+    twitterBtn.parentNode.replaceChild(newTwitterBtn, twitterBtn);
+    emailBtn.parentNode.replaceChild(newEmailBtn, emailBtn);
+    copyBtn.parentNode.replaceChild(newCopyBtn, copyBtn);
+
+    // Add new event listeners
+    newFacebookBtn.addEventListener("click", () =>
+      shareOnFacebook(activityName, description, schedule)
+    );
+    newTwitterBtn.addEventListener("click", () =>
+      shareOnTwitter(activityName, description, schedule)
+    );
+    newEmailBtn.addEventListener("click", () =>
+      shareViaEmail(activityName, description, schedule)
+    );
+    newCopyBtn.addEventListener("click", () =>
+      copyShareLink(activityName, description, schedule)
+    );
+
+    // Show the modal
+    shareModal.classList.remove("hidden");
+    setTimeout(() => {
+      shareModal.classList.add("show");
+    }, 10);
+  }
+
+  function closeShareModalHandler() {
+    const shareModal = document.getElementById("share-modal");
+    if (shareModal) {
+      shareModal.classList.remove("show");
+      setTimeout(() => {
+        shareModal.classList.add("hidden");
+        // Hide any messages
+        const shareMessage = document.getElementById("share-message");
+        if (shareMessage) {
+          shareMessage.classList.add("hidden");
+        }
+      }, 300);
+    }
+  }
+
+  function shareOnFacebook(activityName, description, schedule) {
+    const url = window.location.href;
+    const shareText = `Check out ${activityName} at Mergington High School! ${description} Schedule: ${schedule}`;
+    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+      url
+    )}&quote=${encodeURIComponent(shareText)}`;
+    window.open(facebookUrl, "_blank", "width=600,height=400");
+    showShareMessage("Opening Facebook...");
+  }
+
+  function shareOnTwitter(activityName, description, schedule) {
+    const url = window.location.href;
+    const shareText = `Check out ${activityName} at Mergington High School! ${description} Schedule: ${schedule}`;
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+      shareText
+    )}&url=${encodeURIComponent(url)}`;
+    window.open(twitterUrl, "_blank", "width=600,height=400");
+    showShareMessage("Opening Twitter...");
+  }
+
+  function shareViaEmail(activityName, description, schedule) {
+    const url = window.location.href;
+    const subject = `Check out ${activityName} at Mergington High School`;
+    const body = `I thought you might be interested in this activity:\n\n${activityName}\n\n${description}\n\nSchedule: ${schedule}\n\nLearn more: ${url}`;
+    const mailtoUrl = `mailto:?subject=${encodeURIComponent(
+      subject
+    )}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailtoUrl;
+    showShareMessage("Opening your email client...");
+  }
+
+  function copyShareLink(activityName, description, schedule) {
+    const url = window.location.href;
+    const shareText = `Check out ${activityName} at Mergington High School!\n\n${description}\n\nSchedule: ${schedule}\n\nLearn more: ${url}`;
+
+    // Try to use the modern clipboard API
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard
+        .writeText(shareText)
+        .then(() => {
+          showShareMessage("Link copied to clipboard!", "success");
+        })
+        .catch(() => {
+          fallbackCopyToClipboard(shareText);
+        });
+    } else {
+      fallbackCopyToClipboard(shareText);
+    }
+  }
+
+  function fallbackCopyToClipboard(text) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "absolute";
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.opacity = "0";
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand("copy");
+      showShareMessage("Link copied to clipboard!", "success");
+    } catch (err) {
+      showShareMessage("Failed to copy. Please try again.", "error");
+    }
+    document.body.removeChild(textArea);
+  }
+
+  function showShareMessage(text, type = "info") {
+    const shareMessage = document.getElementById("share-message");
+    if (shareMessage) {
+      shareMessage.textContent = text;
+      shareMessage.className = `share-message ${type}`;
+      shareMessage.classList.remove("hidden");
+
+      // Hide after 3 seconds
+      setTimeout(() => {
+        shareMessage.classList.add("hidden");
+      }, 3000);
+    }
+  }
 
   // Initialize app
   checkAuthentication();
